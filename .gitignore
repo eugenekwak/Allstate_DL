@@ -10,3 +10,6 @@ __pycache__
 .DS_Store
 
 *.rmd
+*.Rmd 
+.Rhistory
+Rhistory
