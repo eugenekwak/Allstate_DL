@@ -17,3 +17,8 @@ Rhistory
 
 *.tex
 *.R
+*.aux
+*.sty
+*.log
+*.synctex.gz
+*.bib
