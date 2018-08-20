@@ -1,2 +1,4 @@
 # Allstate_DL
-An application of deep learning with Keras and TensorFlow (GPU) on the Allstate Kaggle exercise.
+A comparative study on the use and applicability of automated machine learning pipelines using scikit-learn and Keras.
+
+
