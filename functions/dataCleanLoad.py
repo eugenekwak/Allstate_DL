@@ -22,9 +22,6 @@ def dataLoad(dataDirectory, trainFileName, testFileName):
 
     @ testFileName: Name of the test data file. Only accepts CSV. 
                     Expected format: 'train.csv' 
- 
-    @ idVar: Name of the id variable to set as the row index. 
-             Expected format: 'id' 
 
     Returns
     ----------------
