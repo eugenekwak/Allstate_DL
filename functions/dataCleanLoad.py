@@ -7,7 +7,7 @@ import os
 import numpy as np
 from sklearn.utils import shuffle
 
-def dataLoad(dataDirectory, trainFileName, testFileName, idVar):
+def dataLoad(dataDirectory, trainFileName, testFileName):
     '''
     Cleans and returns train and test data from the Allstate Claim Severity 
     Kaggle challenge.
@@ -45,8 +45,8 @@ def dataLoad(dataDirectory, trainFileName, testFileName, idVar):
     train_df.drop(columns=['loss'], inplace=True)
 
     # Set row index.
-    train_df.set_index(idVar, inplace=True)
-    test_df.set_index(idVar, inplace=True)
+    train_df.set_index('id', inplace=True)
+    test_df.set_index('id', inplace=True)
 
     return train_df, test_df
 
@@ -66,7 +66,7 @@ def dataModelTrainingPrepare(df):
 
     Returns
     ----------------
-    Pandas dataframe.
+    Two data frames for the training data. One for predictors and one for target.
 
     '''
 
@@ -83,15 +83,19 @@ def dataModelTrainingPrepare(df):
     with open('train_cols.txt', 'w') as f:
         for s in train_cols:
             f.write(str(s) +'\n')
+    
+    # separate features from target
+    X = df.drop('log_loss', axis=1)
+    y = df['log_loss']
 
-    return df.copy()
+    return X.copy(), y.copy()
 
 def dataModelScoringPrepare(df):
     '''
-    Converts Pandas dataframe into a format that can be used for scoring new 
+    Converts Pandas dataframe intest_df_cleanat that can be used for scoring new 
     data.
 
-    - One-hot encode categorical variables.
+    - One-hot encode categoricaltest_df_cleans.
     - Reconcile dataset to the training data.
 
     Arguments
@@ -124,6 +128,7 @@ def dataModelScoringPrepare(df):
     
     # Re-order columns to match training column order.
     df = df[train_cols]
+    df.drop('log_loss', axis=1, inplace=True)
 
     return df.copy()
 
