@@ -94,7 +94,7 @@ class ensembleLearner:
         # Feature selection pipeline
         drPipeline = Pipeline([
              ('varThresh', VarianceThreshold()),
-             ('varImp', SelectFromModel(estimator=ExtraTreesRegressor())),
+             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor())),
         ])
 
         # Ensembler
@@ -104,9 +104,9 @@ class ensembleLearner:
         ensemble = Pipeline([
             ('dr', drPipeline),
             ('submodels', FeatureUnion([ 
-                ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=10))),
-                ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=10))),
-                ('lr', ModelTransformer(Lasso())),
+                ('dtr', ModelTransformer(ExtraTreesRegressor(random_state=self.randSeed))),
+                ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
+                ('lr', ModelTransformer(Lasso(random_state=self.randSeed))),
             ])),
             ('ensemble', stacker)
             ])
