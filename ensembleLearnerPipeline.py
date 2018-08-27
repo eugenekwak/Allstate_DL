@@ -18,7 +18,6 @@ from sklearn.ensemble import GradientBoostingRegressor, ExtraTreesRegressor
 from sklearn.feature_selection import VarianceThreshold, SelectFromModel
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_absolute_error, r2_score
-from helperFunctions.learnerFunctions import *
 
 
 class ModelTransformer(BaseEstimator, TransformerMixin):
