@@ -22,3 +22,5 @@ Rhistory
 *.log
 *.synctex.gz
 *.bib
+
+train_cols.txt
