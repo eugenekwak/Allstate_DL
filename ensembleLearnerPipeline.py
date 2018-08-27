@@ -104,7 +104,7 @@ class ensembleLearner:
             ('submodels', FeatureUnion([ 
                 ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
                 ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
-                ('lr', ModelTransformer(Lasso(random_state=self.randSeed))),
+                ('lr', ModelTransformer(LinearRegression())),
             ])),
             ('ensemble', stacker)
             ])
