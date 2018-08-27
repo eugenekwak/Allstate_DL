@@ -20,10 +20,10 @@ def main():
     testFile = 'test.csv'
 
     # Define the parameter grid
-    param_grid = {'dr__varThresh__threshold': [0.001, 0.0001],
+    param_grid = {'dr__varThresh__threshold': [0.0001],
                   'dr__varImp__threshold': ['0.5*mean' ,'1.5*mean'],
+                  'submodels__dtr__model__min_samples_split': [2, 10],
                   'submodels__dtr__model__max_depth': [5, 10, 25],
-                  'submodels__dtr__model__min_samples_split': [2, 20],
                   'submodels__gbr__model__learning_rate': [0.1, 0.01, 0.001],
                   'submodels__gbr__model__max_depth': [5, 10, 25],
                   'submodels__gbr__model__n_estimators': [100, 250, 500],
@@ -33,19 +33,20 @@ def main():
     # Pipeline architecture for reference
     #
     # drPipeline = Pipeline([
-    #         ('varThresh', VarianceThreshold()),
-    #         ('varImp', SelectFromModel(estimator=ExtraTreesRegressor())),
+    #        ('varThresh', VarianceThreshold()),
+    #        ('varImp', SelectFromModel(estimator=DecisionTreeRegressor())),
     #    ])
     # stacker = LinearRegression()
+    #
     # ensemble = Pipeline([
     #        ('dr', drPipeline),
     #        ('submodels', FeatureUnion([ 
-    #            ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=10))),
-    #            ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=10))),
-    #            ('lr', ModelTransformer(Lasso())),
-    #        ])),
+    #           ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
+    #           ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
+    #           ('lr', ModelTransformer(Lasso(random_state=self.randSeed))),
+    #       ])),
     #        ('ensemble', stacker)
-    #        ])
+    #       ])
     #
     # 
     ###########################################################
