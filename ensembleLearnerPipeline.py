@@ -19,7 +19,6 @@ from sklearn.feature_selection import VarianceThreshold, SelectFromModel
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_absolute_error, r2_score
 
-
 class ModelTransformer(BaseEstimator, TransformerMixin):
     '''
     Turns estimators into transformers so that predicted values returned.
@@ -103,7 +102,7 @@ class ensembleLearner:
         ensemble = Pipeline([
             ('dr', drPipeline),
             ('submodels', FeatureUnion([ 
-                ('dtr', ModelTransformer(ExtraTreesRegressor(random_state=self.randSeed))),
+                ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
                 ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
                 ('lr', ModelTransformer(Lasso(random_state=self.randSeed))),
             ])),
