@@ -27,7 +27,6 @@ def main():
                   'submodels__gbr__model__learning_rate': [0.1, 0.01, 0.001],
                   'submodels__gbr__model__max_depth': [5, 10, 25],
                   'submodels__gbr__model__n_estimators': [100, 250, 500],
-                  'submodels__lr__model__alpha':[0.001, 0.0001],
                   }
 
     # Pipeline architecture for reference
