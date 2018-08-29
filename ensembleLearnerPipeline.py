@@ -2,6 +2,8 @@
 # Benchmark model
 # Last updated 2018-08-25
 
+# need to fix parallel processing for grid search cv
+
 import sys
 import os
 import time
