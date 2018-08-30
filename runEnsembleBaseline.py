@@ -20,14 +20,13 @@ def main():
     testFile = 'test.csv'
 
     # Define the parameter grid
-    param_grid = {'dr__varThresh__threshold': [0.0001],
-                  'dr__varImp__threshold': ['0.5*mean' ,'1.5*mean'],
-                  'submodels__dtr__model__min_samples_split': [2, 10],
-                  'submodels__dtr__model__max_depth': [5, 20],
-                  'submodels__gbr__model__learning_rate': [0.1, 0.01],
-                  'submodels__gbr__model__max_depth': [5, 20],
-                  'submodels__gbr__model__n_estimators': [100, 250, 500],
-                  }
+    param_grid = {'submodels__dtr__model__min_samples_split': [2, 10, 20],
+                  'submodels__dtr__model__max_depth': [5, 10, 20],
+                  'submodels__sgd__model__learning_rate': ['optimal'],
+                  'submodels__sgd__model__max_iter': [1000, 10000],
+                  'submodels__sgd__model__penalty': ['l1'],
+                  'submodels__sgd__model__tol': [0.001, 0.0001],
+                 }
 
     # Pipeline architecture for reference
     #
@@ -38,14 +37,13 @@ def main():
     # stacker = LinearRegression()
     #
     # ensemble = Pipeline([
-    #        ('dr', drPipeline),
-    #        ('submodels', FeatureUnion([ 
-    #           ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
-    #           ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
-    #           ('lr', ModelTransformer(Lasso(random_state=self.randSeed))),
-    #       ])),
-    #        ('ensemble', stacker)
-    #       ])
+    #           ('submodels', FeatureUnion([ 
+    #               ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
+    #               ('sgd', ModelTransformer(SGDRegressor(random_state=self.randSeed))),
+    #               ('lr', ModelTransformer(LinearRegression())),
+    #           ])),
+    #           ('ensemble', stacker)
+    #           ])
     #
     # 
     ###########################################################

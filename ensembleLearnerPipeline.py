@@ -1,6 +1,6 @@
 # ensembleLearner.py
 # Benchmark model
-# Last updated 2018-08-25
+# Last updated 2018-08-29
 
 # need to fix parallel processing for grid search cv
 
@@ -112,7 +112,7 @@ class ensembleLearner:
             ])
 
         # Fit grid search using params and ensemble pipeline
-        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=5, scoring='neg_mean_absolute_error', refit=True, verbose=3, n_jobs=2)
+        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=5, scoring='r2', refit=True, verbose=3, n_jobs=2)
         self.modelObject = ensembleGrid.fit(X_train_dr, y_train)
 
         # Training accuracies
@@ -173,14 +173,13 @@ class ensembleLearner:
 
         '''
         
-        # Ensure model has been built first
         try:
             # grab feature importance scores
-            varThreshIndex = self.drPipeline.best_estimator_.named_steps['varThresh'].get_support(indices=True)
+            varThreshIndex = self.drPipeline.named_steps['varThresh'].get_support(indices=True)
 
             X_train_cols_ = X_train.iloc[:, list(varThreshIndex)].columns
             
-            fi = self.drPipeline.best_estimator_.named_steps['varImp'].estimator_.feature_importances_
+            fi = self.drPipeline.named_steps['varImp'].estimator_.feature_importances_
             
             # save feature importances to a data frame with variable names
             fi_df = pd.DataFrame(
