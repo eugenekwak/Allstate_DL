@@ -14,9 +14,8 @@ import datetime as dt
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.externals import joblib
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.linear_model import LinearRegression, Lasso
+from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import GradientBoostingRegressor, ExtraTreesRegressor
 from sklearn.feature_selection import VarianceThreshold, SelectFromModel
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_absolute_error, r2_score
@@ -92,32 +91,33 @@ class ensembleLearner:
         startTime = time.time()
         
         # Feature selection pipeline
-        drPipeline = Pipeline([
-             ('varThresh', VarianceThreshold()),
-             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor())),
+        self.drPipeline = Pipeline([
+             ('varThresh', VarianceThreshold(threshold=0.0001)),
+             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.5*mean')),
         ])
+
+        X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
 
         # Ensembler
         stacker = LinearRegression()
 
         # Ensemble pipeline
         ensemble = Pipeline([
-            ('dr', drPipeline),
             ('submodels', FeatureUnion([ 
                 ('dtr', ModelTransformer(DecisionTreeRegressor(random_state=self.randSeed))),
-                ('gbr', ModelTransformer(GradientBoostingRegressor(random_state=self.randSeed))),
+                ('sgd', ModelTransformer(SGDRegressor(random_state=self.randSeed))),
                 ('lr', ModelTransformer(LinearRegression())),
             ])),
             ('ensemble', stacker)
             ])
 
         # Fit grid search using params and ensemble pipeline
-        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=5, scoring='r2', refit=True, verbose=3)
-        self.modelObject = ensembleGrid.fit(X_train, y_train)
+        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=5, scoring='neg_mean_absolute_error', refit=True, verbose=3, n_jobs=2)
+        self.modelObject = ensembleGrid.fit(X_train_dr, y_train)
 
         # Training accuracies
-        inPreds = self.modelObject.predict(X_train)
-        self.r2Fit_ = ensembleGrid.best_score_
+        inPreds = self.modelObject.predict(X_train_dr)
+        self.r2Fit_ = r2_score(y_train, inPreds)
         self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))  
 
         # End run and save run time in seconds
@@ -147,9 +147,9 @@ class ensembleLearner:
         '''
 
         # Store row index and predictions to a data frame
-        pred_df = pd.DataFrame(columns=['id','preds'])
+        pred_df = pd.DataFrame(columns=['id','loss'])
         pred_df['id'] = X_test.index
-        pred_df['preds'] = np.exp(model.predict(X_test))
+        pred_df['loss'] = np.exp(model.predict(self.drPipeline.transform(X_test)))
 
         # Write prediction data frame to disk
         pred_df.to_csv('data/predictions/pred_ensemble'+dt.datetime.now().strftime('%Y_%m_%d')+'.csv', index=False)
@@ -176,11 +176,11 @@ class ensembleLearner:
         # Ensure model has been built first
         try:
             # grab feature importance scores
-            varThreshIndex = self.modelObject.best_estimator_.named_steps['dr'].named_steps['varThresh'].get_support(indices=True)
+            varThreshIndex = self.drPipeline.best_estimator_.named_steps['varThresh'].get_support(indices=True)
 
             X_train_cols_ = X_train.iloc[:, list(varThreshIndex)].columns
             
-            fi = self.modelObject.best_estimator_.named_steps['dr'].named_steps['varImp'].estimator_.feature_importances_
+            fi = self.drPipeline.best_estimator_.named_steps['varImp'].estimator_.feature_importances_
             
             # save feature importances to a data frame with variable names
             fi_df = pd.DataFrame(
