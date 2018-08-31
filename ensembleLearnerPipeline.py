@@ -92,8 +92,8 @@ class ensembleLearner:
         
         # Feature selection pipeline
         self.drPipeline = Pipeline([
-             ('varThresh', VarianceThreshold(threshold=0.0001)),
-             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.5*mean')),
+             ('varThresh', VarianceThreshold(threshold=0.001)),
+             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.75*mean')),
         ])
 
         X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
