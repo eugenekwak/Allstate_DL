@@ -38,9 +38,7 @@ class ModelTransformer(BaseEstimator, TransformerMixin):
 class ensembleLearner:
     '''
     A baseline model to benchmark deep learning architectures against.
-
     This class is only tested against Pandas dataframes.
-
     '''
 
     def __init__(self):
@@ -56,7 +54,6 @@ class ensembleLearner:
     def buildModel(self, X_train, y_train, param_grid, idVar):
         '''
         Fits a model to the data using 5 fold cross validation and grid search.
-
         The following model attributes are stored:
             - self.X_train_cols_  : List object containing feature names.
             - self.param_grid     : Dict object containing search grid.
@@ -64,13 +61,10 @@ class ensembleLearner:
             - self.fitRunTime_    : Float object containing total run time in seconds.
             - self.maeFit_        : Best mean absolute error from cross-validation.
             - self.r2Fit_         : Best r2_score from cross-validation.
-
         Arguments
         ----------------
         @ X_train: Pandas data frame for feature space.
-
         @ y_train: Pandas series containing labels.
-
         @ param_grid: Dictionary containing parameters for the ensemble.
             Example:
             param_grid = {'dr__varThresh__threshold': [0.01, 0.001],
@@ -78,11 +72,9 @@ class ensembleLearner:
                           'submodels__dtr__model__max_depth': [5, 10, 15, 20, 25],
                           }
               
-
         Returns
         ----------------
         Pandas dataframe.
-
         '''
         self.X_train_cols_ = list(X_train.columns)
         self.param_grid = param_grid
@@ -92,7 +84,8 @@ class ensembleLearner:
         
         # Feature selection pipeline
         self.drPipeline = Pipeline([
-             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.5*mean')),
+             ('varThresh', VarianceThreshold(threshold=0.001)),
+             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.75*mean')),
         ])
 
         X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
@@ -126,26 +119,18 @@ class ensembleLearner:
         p = pickle.dumps(ensembleGrid)
         print('Model object is', round(sys.getsizeof(p)/1000000, 4), 'Mb in size.')
         joblib.dump(self.modelObject, 'models/ensemble/ensemble_model_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
-        # Save down DR pipeline for scoring.
-        joblib.dump(self.drPipeline, 'models/ensemble/drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
-
 
     def makePrediction(self, X_test, model):
         '''
         Returns predictions using the model and writes output to file as a csv.
-
         Run dataModelScoringPrepare() to reconcile datasets.
-
         Arguments
         ----------------
         @ X_test: Pandas data frame for feature space of the test data.
-
         @ model: Fitted pipeline model object.
-
         Returns
         ----------------
         Pandas dataframe.
-
         '''
 
         # Store row index and predictions to a data frame
@@ -160,31 +145,25 @@ class ensembleLearner:
         return pred_df
 
     
-    def getDrivers(self, X_train, , dr_pipeline_path):
+    def getDrivers(self, X_train):
         '''
         Returns a Pandas dataframe containing the features and feature importance
         scores. It is also sorted in descending order of the feature importances.
-
         Arguments
         ----------------
         @ X_train: Pandas data frame for feature space.
-
         Returns
         ----------------
         Pandas dataframe.
-
         '''
         
         try:
-
-            # Load dr pipeline
-            drPipe = joblib.load(dr_pipeline_path)
-
             # grab feature importance scores
-            drFeatures = drPipe.named_steps['varImp'].get_support()
-            X_train_cols_ = X_train.iloc[:, list(drFeatures)].columns
-            fi = drPipe.named_steps['varImp'].estimator_.feature_importances_
-            fi = [fi[x] for x in range(len(fi)) if drFeatures[x]]
+            varThreshIndex = self.drPipeline.named_steps['varThresh'].get_support(indices=True)
+
+            X_train_cols_ = X_train.iloc[:, list(varThreshIndex)].columns
+            
+            fi = self.drPipeline.named_steps['varImp'].estimator_.feature_importances_
             
             # save feature importances to a data frame with variable names
             fi_df = pd.DataFrame(
@@ -206,4 +185,3 @@ class ensembleLearner:
             return fi_df
         except:
             print('Model must be fit first. Run method buildModel().')
-
