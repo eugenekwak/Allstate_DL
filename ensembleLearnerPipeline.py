@@ -48,19 +48,19 @@ class ensembleLearner:
         self.r2Fit_ = 0.0
         self.maeFit_ = 0.0
         self.modelObject = None
-        self.idVar_ = None
+        self.param_grid = None
 
 
-    def buildModel(self, X_train, y_train, param_grid, idVar):
+    def buildModel(self, X_train, y_train, param_grid):
         '''
         Fits a model to the data using 5 fold cross validation and grid search.
         The following model attributes are stored:
-            - self.X_train_cols_  : List object containing feature names.
             - self.param_grid     : Dict object containing search grid.
             - self.modelObject    : Fitted model pipeline object.
             - self.fitRunTime_    : Float object containing total run time in seconds.
             - self.maeFit_        : Best mean absolute error from cross-validation.
             - self.r2Fit_         : Best r2_score from cross-validation.
+
         Arguments
         ----------------
         @ X_train: Pandas data frame for feature space.
@@ -76,15 +76,13 @@ class ensembleLearner:
         ----------------
         Pandas dataframe.
         '''
-        self.X_train_cols_ = list(X_train.columns)
+
         self.param_grid = param_grid
-        self.idVar_ = idVar
 
         startTime = time.time()
         
         # Feature selection pipeline
         self.drPipeline = Pipeline([
-             ('varThresh', VarianceThreshold(threshold=0.001)),
              ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.75*mean')),
         ])
 
@@ -120,56 +118,72 @@ class ensembleLearner:
         print('Model object is', round(sys.getsizeof(p)/1000000, 4), 'Mb in size.')
         joblib.dump(self.modelObject, 'models/ensemble/ensemble_model_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
 
-    def makePrediction(self, X_test, model):
+        # Save down DR pipeline for scoring.
+        joblib.dump(self.drPipeline, 'models/ensemble/drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
+
+    def makePrediction(self, X_test, model_object_file, dr_pipeline_file):
         '''
         Returns predictions using the model and writes output to file as a csv.
         Run dataModelScoringPrepare() to reconcile datasets.
+
         Arguments
         ----------------
         @ X_test: Pandas data frame for feature space of the test data.
         @ model: Fitted pipeline model object.
+        @ dr_pipeline_file: Path and file name for fitted DR pipeline.
+
         Returns
         ----------------
         Pandas dataframe.
         '''
 
+        # Get fitted pipeline model
+
+        model = joblib.load(model_object_file)
+
+        # Get fitted DR pipeline
+        drPipe = joblib.load(dr_pipeline_file)
+
         # Store row index and predictions to a data frame
         pred_df = pd.DataFrame(columns=['id','loss'])
         pred_df['id'] = X_test.index
-        pred_df['loss'] = np.exp(model.predict(self.drPipeline.transform(X_test)))
+        pred_df['loss'] = np.exp(model.predict(drPipe.transform(X_test)))
 
         # Write prediction data frame to disk
-        pred_df.to_csv('data/predictions/pred_ensemble'+dt.datetime.now().strftime('%Y_%m_%d')+'.csv', index=False)
+        pred_df.to_csv('data/predictions/pred_ensemble_'+dt.datetime.now().strftime('%Y_%m_%d')+'.csv', index=False)
 
         # Return prediction data frame for analysis
         return pred_df
 
-    
-    def getDrivers(self, X_train):
+    def getDrivers(self, X_train, dr_pipeline_file):
         '''
         Returns a Pandas dataframe containing the features and feature importance
         scores. It is also sorted in descending order of the feature importances.
+
         Arguments
         ----------------
         @ X_train: Pandas data frame for feature space.
+        @ dr_pipeline_file: Path and file name for fitted DR pipeline.
+
         Returns
         ----------------
         Pandas dataframe.
         '''
         
         try:
-            # grab feature importance scores
-            varThreshIndex = self.drPipeline.named_steps['varThresh'].get_support(indices=True)
+            # Get DR pipeline object
+            drPipe = joblib.load(dr_pipeline_file)
 
-            X_train_cols_ = X_train.iloc[:, list(varThreshIndex)].columns
-            
-            fi = self.drPipeline.named_steps['varImp'].estimator_.feature_importances_
+            # grab feature importance scores
+            drFeatures = drPipe.named_steps['varImp'].get_support()
+            X_train_cols_ = X_train.iloc[:, list(drFeatures)].columns
+            fi = drPipe.named_steps['varImp'].estimator_.feature_importances_
+            fi = [fi[x] for x in range(len(fi)) if drFeatures[x]]
             
             # save feature importances to a data frame with variable names
-            fi_df = pd.DataFrame(
-                {'var': list(X_train_cols_),
-                'feature_importance': list(fi)
-                })
+            fi_df = pd.DataFrame()
+            fi_df['var'] = list(X_train_cols_)
+            fi_df['feature_importance'] = list(fi)
 
             # sort the data frame desc order of feature importance
             fi_df = fi_df.sort_values(by=['feature_importance'],ascending=False).reset_index(drop=True)

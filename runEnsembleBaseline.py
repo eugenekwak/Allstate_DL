@@ -18,16 +18,18 @@ def main():
     dataPath = 'data/input/'
     trainFile = 'train.csv'
     testFile = 'test.csv'
-    train_col_file = 'data/ensemble/train_cols.txt'
+    train_col_file = 'models/ensemble/train_cols.txt'
+    model_object_file = 'models/ensemble/ensemble_model_2018_09_01.pkl'
+    dr_pipeline_file = 'models/ensemble/drPipeline_2018_09_01.pkl'
 
     # Define the parameter grid
-    param_grid = {'submodels__dtr__model__min_samples_split': [2, 10, 20],
-                  'submodels__dtr__model__max_depth': [5, 10, 20],
-                  'submodels__dtr__model__min_samples_leaf': [2, 10, 20],
+    param_grid = {'submodels__dtr__model__min_samples_split': [5],
+                  'submodels__dtr__model__max_depth': [5],
+                  'submodels__dtr__model__min_samples_leaf': [5],
                   'submodels__sgd__model__learning_rate': ['optimal'],
-                  'submodels__sgd__model__max_iter': [1000, 5000],
+                  'submodels__sgd__model__max_iter': [1000],
                   'submodels__sgd__model__penalty': ['l1'],
-                  'submodels__sgd__model__tol': [0.01, 0.001, 0.0001],
+                  'submodels__sgd__model__tol': [0.01],
                  }
 
     # Pipeline architecture for reference
@@ -66,20 +68,20 @@ def main():
     ensPipelineLearner = ensembleLearner()
 
     # Train the model
-    ensPipelineLearner.buildModel(X_train, y_train, param_grid, 'id')
+    ensPipelineLearner.buildModel(X_train, y_train, param_grid)
 
     # Make predictions on the test data
     # Also writes predictions to file
     print('Making predictions on test data...')
-    testPreds = ensPipelineLearner.makePrediction(X_test, ensPipelineLearner.modelObject)
+    testPreds = ensPipelineLearner.makePrediction(X_test, model_object_file, dr_pipeline_file)
 
     # Compute drivers and write driver output to file
     print('Getting drivers...')
-    drivers = ensPipelineLearner.getDrivers(X_train)
+    drivers = ensPipelineLearner.getDrivers(X_train, dr_pipeline_file)
 
     # Gather performance metrics
     print('Gathering performance metrics...')
-    with open('ensemble_report.txt', 'w') as text_file:
+    with open('models/ensemble/ensemble_report.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(ensPipelineLearner.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(ensPipelineLearner.maeFit_) + '\n') 
         text_file.write('Training run time: ' + str(ensPipelineLearner.fitRunTime_) + ' seconds' + '\n') 
