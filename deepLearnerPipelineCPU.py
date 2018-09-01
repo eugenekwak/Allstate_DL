@@ -87,7 +87,7 @@ class deepLearner:
         self.networkFunc = network_function(X_train_reduced.shape[1])
 
         # Write model summary to file
-        with open('models/deep_learning/model_summary_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt','w') as fh:
+        with open('models/deep_learning/cpu_model_summary_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt','w') as fh:
             self.networkFunc.summary(print_fn=lambda x: fh.write(x + '\n'))
 
         # Learning rate scheduler for decay
