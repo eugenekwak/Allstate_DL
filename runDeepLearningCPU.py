@@ -3,7 +3,7 @@
 
 import os
 import sys
-import datetime # for tracking run times
+import datetime as dt 
 import pandas as pd 
 import math
 import seaborn as sns
@@ -44,15 +44,15 @@ def main():
     
     # Learning rate decay function
     def stepDecay(epoch):
-	    initial_lrate = 0.1
-	    drop = 0.5
-	    epochs_drop = 10.0
-	    lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
-	    return lrate
+        initial_lrate = 0.1
+        drop = 0.5
+        epochs_drop = 10.0
+        lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
+        return lrate
 
     ######################################################
 
-    print(datetime.datetime.now())
+    print(dt.datetime.now())
 
     # Load datasets into memory
     print('Loading datasets...')
@@ -91,7 +91,7 @@ def main():
 
     # Gather performance metrics
     print('Gathering performance metrics...')
-    with open('cpu_deep_learning_report.txt', 'w') as text_file:
+    with open('models/deep_learning/cpu_deep_learning_report_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(dl.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(dl.maeFit_) + '\n') 
         text_file.write('Training run time: ' + str(dl.fitRunTime_) + ' seconds' + '\n')

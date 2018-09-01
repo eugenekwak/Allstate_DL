@@ -4,7 +4,7 @@
 
 import os
 import sys
-import datetime # for tracking run times
+import datetime as dt 
 import pandas as pd 
 from ensembleLearnerPipeline import ensembleLearner
 from helperFunctions.dataCleanLoad import *
@@ -53,7 +53,7 @@ def main():
     # 
     ###########################################################
 
-    print(datetime.datetime.now())
+    print(dt.datetime.now())
 
     # Load datasets into memory
     print('Loading datasets...')
@@ -82,7 +82,7 @@ def main():
 
     # Gather performance metrics
     print('Gathering performance metrics...')
-    with open('models/ensemble/ensemble_report.txt', 'w') as text_file:
+    with open('models/ensemble/ensemble_report'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(ensPipelineLearner.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(ensPipelineLearner.maeFit_) + '\n') 
         text_file.write('Training run time: ' + str(ensPipelineLearner.fitRunTime_) + ' seconds' + '\n') 
