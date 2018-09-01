@@ -51,7 +51,7 @@ class ensembleLearner:
         self.param_grid = None
 
 
-    def buildModel(self, X_train, y_train, param_grid):
+    def buildModel(self, X_train, y_train, param_grid, dr_threshold='0.75*mean'):
         '''
         Fits a model to the data using 5 fold cross validation and grid search.
         The following model attributes are stored:
@@ -63,14 +63,18 @@ class ensembleLearner:
 
         Arguments
         ----------------
-        @ X_train: Pandas data frame for feature space.
+        @ X_train: Pandas data frame for feature space in training data.
+
         @ y_train: Pandas series containing labels.
+
         @ param_grid: Dictionary containing parameters for the ensemble.
-            Example:
-            param_grid = {'dr__varThresh__threshold': [0.01, 0.001],
-                          'dr__varImp__threshold': ['0.25*mean', '0.75*mean', '1.25*mean'],
-                          'submodels__dtr__model__max_depth': [5, 10, 15, 20, 25],
+            ex)
+            param_grid = {'submodels__dtr__model__max_depth': [5, 10, 15, 20, 25],
+                          ...
                           }
+        
+        @ dr_threshold: Threshold for determining features to include in the model.
+                        See scikit-learn documentation for SelectFromModel().
               
         Returns
         ----------------
@@ -83,7 +87,7 @@ class ensembleLearner:
         
         # Feature selection pipeline
         self.drPipeline = Pipeline([
-             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.75*mean')),
+             ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold=dr_threshold)),
         ])
 
         X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
@@ -129,8 +133,11 @@ class ensembleLearner:
         Arguments
         ----------------
         @ X_test: Pandas data frame for feature space of the test data.
+
         @ model: Fitted pipeline model object.
-        @ dr_pipeline_file: Path and file name for fitted DR pipeline.
+
+        @ dr_pipeline_file: Path and file name for the fitted dimension reduction pipeline.
+                            ex) 'models/deep_learning/cpu_drPipeline_YYYY_MM_DD.pkl'
 
         Returns
         ----------------
@@ -158,12 +165,14 @@ class ensembleLearner:
     def getDrivers(self, X_train, dr_pipeline_file):
         '''
         Returns a Pandas dataframe containing the features and feature importance
-        scores. It is also sorted in descending order of the feature importances.
+        scores. It is also sorted in ascending order of the feature importances.
 
         Arguments
         ----------------
-        @ X_train: Pandas data frame for feature space.
-        @ dr_pipeline_file: Path and file name for fitted DR pipeline.
+        @ X_train: Pandas data frame for feature space in training data.
+
+        @ dr_pipeline_file: Path and file name for the fitted dimension reduction pipeline.
+                            ex) 'models/deep_learning/cpu_drPipeline_YYYY_MM_DD.pkl'
 
         Returns
         ----------------

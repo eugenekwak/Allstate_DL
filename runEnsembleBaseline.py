@@ -21,6 +21,7 @@ def main():
     train_col_file = 'models/ensemble/train_cols.txt'
     model_object_file = 'models/ensemble/ensemble_model_2018_09_01.pkl'
     dr_pipeline_file = 'models/ensemble/drPipeline_2018_09_01.pkl'
+    dr_threshold = '0.75*mean'
 
     # Define the parameter grid
     param_grid = {'submodels__dtr__model__min_samples_split': [5],
@@ -68,16 +69,16 @@ def main():
     ensPipelineLearner = ensembleLearner()
 
     # Train the model
-    ensPipelineLearner.buildModel(X_train, y_train, param_grid)
+    ensPipelineLearner.buildModel(X_train, y_train, param_grid, dr_threshold)
 
     # Make predictions on the test data
     # Also writes predictions to file
     print('Making predictions on test data...')
-    testPreds = ensPipelineLearner.makePrediction(X_test, model_object_file, dr_pipeline_file)
+    ensPipelineLearner.makePrediction(X_test, model_object_file, dr_pipeline_file)
 
     # Compute drivers and write driver output to file
     print('Getting drivers...')
-    drivers = ensPipelineLearner.getDrivers(X_train, dr_pipeline_file)
+    ensPipelineLearner.getDrivers(X_train, dr_pipeline_file)
 
     # Gather performance metrics
     print('Gathering performance metrics...')

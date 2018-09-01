@@ -8,7 +8,10 @@ import pandas as pd
 import math
 import seaborn as sns
 from matplotlib import pyplot as plt
-from deepLearnerPipeline import deepLearner
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation
+from keras.optimizers import adam, SGD
+from deepLearnerPipelineCPU import deepLearner
 from helperFunctions.dataCleanLoad import *
 
 def main():
@@ -19,9 +22,15 @@ def main():
     dataPath = 'data/input/'
     trainFile = 'train.csv'
     testFile = 'test.csv'
-    train_cols_file = 'train_cols.txt'
-    epochs=50
-    batch_size=10
+    train_col_file = 'models/deep_learning/train_cols.txt'
+    model_file = 'models/deep_learning/weights.best.from_cpu_2018_09_01.hdf5'
+    dr_pipeline_file = 'models/deep_learning/cpu_drPipeline_2018_09_01.pkl'
+
+    # Network training configuration
+    dr_threshold = '0.75*mean'
+    epochs=5
+    batch_size=50
+    val_frac=0.15
 
     # Define the network architecture
     def createModel(input_size):
@@ -51,38 +60,41 @@ def main():
 
     # Prep data for the model and scoring
     print('Prepping train and test data for models...')
-    X_train, y_train = dataModelTrainingPrepare(train_df, train_cols_file)
-    X_test = dataModelScoringPrepare(test_df, train_cols_file)
+    X_train, y_train = dataModelTrainingPrepare(train_df, train_col_file)
+    X_test = dataModelScoringPrepare(test_df, train_col_file)
 
     # Instantiate learner class
     print('Training a model...')
-    deepLearner = deepLearner()
+    dl = deepLearner()
 
     # Train the model
-    deepLearner.buildModel(X_train, y_train, createModel, epochs=epochs, batch_size=batch_size, lr_init=lr_init, lr_drop=lr_drop, lr_epochs_drop=lr_epochs_drop)
+    dl.buildModel(X_train, y_train, network_function=createModel, decay_function=stepDecay, val_frac=val_frac, epochs=epochs, batch_size=batch_size, dr_threshold=dr_threshold)
 
     # Make predictions on the test data
     # Also writes predictions to file
     print('Making predictions on test data...')
-    testPreds = deepLearner.makePrediction(X_test, deepLearner.modelObject)
+    dl.makePrediction(X_test, model_file=model_file, dr_pipeline_file=dr_pipeline_file)
 
-    # Write out training chart
-    sns.set_style("whitegrid")
-    plt.plot(dlearner.modelObject.history['mean_absolute_error'], label='train')
-    plt.plot(dlearner.modelObject.history['val_mean_absolute_error'], label='validation')
-    plt.xlabel("Epoch")
-    plt.ylabel("MAE")
+    # Get drivers
+    print('Getting model drivers...')
+    dl.getDrivers(X_train, dr_pipeline_file=dr_pipeline_file)
+
+    # Visualize training performance across epochs.
+    sns.set_style('whitegrid')
+    plt.plot(dl.modelObject.history['mean_absolute_error'], label='train')
+    plt.plot(dl.modelObject.history['val_mean_absolute_error'], label='validation')
+    plt.xlabel('Epoch')
+    plt.ylabel('MAE')
     plt.title('MAE per Epoch')
     plt.legend()
-    plt.savefig('foo.png')
+    plt.savefig('models/deep_learning/train_performance.png')
 
     # Gather performance metrics
     print('Gathering performance metrics...')
-    with open('ensemble_report.txt', 'w') as text_file:
-        text_file.write('Training R2 score: ' + str(deepLearner.r2Fit_) + '\n')
-        text_file.write('Training MAE score: ' + str(deepLearner.maeFit_) + '\n') 
-        text_file.write('Training run time: ' + str(deepLearner.fitRunTime_) + ' seconds' + '\n') 
-        text_file.write('Network architecture: ' + str(deepLearner.modelObject.summary()) + '\n') 
+    with open('cpu_deep_learning_report.txt', 'w') as text_file:
+        text_file.write('Training R2 score: ' + str(dl.r2Fit_) + '\n')
+        text_file.write('Training MAE score: ' + str(dl.maeFit_) + '\n') 
+        text_file.write('Training run time: ' + str(dl.fitRunTime_) + ' seconds' + '\n')
 
     print('Job complete!')
 
