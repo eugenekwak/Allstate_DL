@@ -47,7 +47,7 @@ def dataLoad(dataDirectory, trainFileName, testFileName):
 
     return train_df, test_df
 
-def dataModelTrainingPrepare(df):
+def dataModelTrainingPrepare(df, train_cols_file):
     '''
     Converts Pandas dataframe into a format that can be used for training models.
 
@@ -60,6 +60,7 @@ def dataModelTrainingPrepare(df):
     Arguments
     ----------------
     @ df: Name of the Pandas dataframe.
+    @ train_cols_file: Path and name of *.txt file for training columns.
 
     Returns
     ----------------
@@ -77,7 +78,7 @@ def dataModelTrainingPrepare(df):
     # Get list of columns and write to file for use later.
     train_cols = list(df.columns)
 
-    with open('train_cols.txt', 'w') as f:
+    with open(train_cols_file, 'w') as f:
         for s in train_cols:
             f.write(str(s) +'\n')
     
@@ -87,7 +88,7 @@ def dataModelTrainingPrepare(df):
 
     return X.copy(), y.copy()
 
-def dataModelScoringPrepare(df):
+def dataModelScoringPrepare(df, train_cols_file):
     '''
     Converts Pandas dataframe intest_df_cleanat that can be used for scoring new 
     data.
@@ -98,6 +99,7 @@ def dataModelScoringPrepare(df):
     Arguments
     ----------------
     @ df: Name of the Pandas dataframe.
+    @ train_cols_file: Path and name of *.txt file for training columns.
 
     Returns
     ----------------
@@ -108,7 +110,7 @@ def dataModelScoringPrepare(df):
     # Get list of columns in the training data to reconcile differences in new
     # data.
     train_cols = []
-    with open('train_cols.txt', 'r') as f:
+    with open(train_cols_file, 'r') as f:
         for line in f:
             train_cols.append(line.strip())
 

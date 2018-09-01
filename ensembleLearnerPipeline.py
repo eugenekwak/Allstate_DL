@@ -92,7 +92,6 @@ class ensembleLearner:
         
         # Feature selection pipeline
         self.drPipeline = Pipeline([
-             ('varThresh', VarianceThreshold(threshold=0.0001)),
              ('varImp', SelectFromModel(estimator=DecisionTreeRegressor(), threshold='0.5*mean')),
         ])
 
@@ -127,6 +126,9 @@ class ensembleLearner:
         p = pickle.dumps(ensembleGrid)
         print('Model object is', round(sys.getsizeof(p)/1000000, 4), 'Mb in size.')
         joblib.dump(self.modelObject, 'models/ensemble/ensemble_model_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
+        # Save down DR pipeline for scoring.
+        joblib.dump(self.drPipeline, 'models/ensemble/drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 
+
 
     def makePrediction(self, X_test, model):
         '''
@@ -158,7 +160,7 @@ class ensembleLearner:
         return pred_df
 
     
-    def getDrivers(self, X_train):
+    def getDrivers(self, X_train, , dr_pipeline_path):
         '''
         Returns a Pandas dataframe containing the features and feature importance
         scores. It is also sorted in descending order of the feature importances.
@@ -174,12 +176,15 @@ class ensembleLearner:
         '''
         
         try:
-            # grab feature importance scores
-            varThreshIndex = self.drPipeline.named_steps['varThresh'].get_support(indices=True)
 
-            X_train_cols_ = X_train.iloc[:, list(varThreshIndex)].columns
-            
-            fi = self.drPipeline.named_steps['varImp'].estimator_.feature_importances_
+            # Load dr pipeline
+            drPipe = joblib.load(dr_pipeline_path)
+
+            # grab feature importance scores
+            drFeatures = drPipe.named_steps['varImp'].get_support()
+            X_train_cols_ = X_train.iloc[:, list(drFeatures)].columns
+            fi = drPipe.named_steps['varImp'].estimator_.feature_importances_
+            fi = [fi[x] for x in range(len(fi)) if drFeatures[x]]
             
             # save feature importances to a data frame with variable names
             fi_df = pd.DataFrame(

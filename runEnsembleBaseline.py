@@ -18,6 +18,7 @@ def main():
     dataPath = 'data/input/'
     trainFile = 'train.csv'
     testFile = 'test.csv'
+    train_col_file = 'data/ensemble/train_cols.txt'
 
     # Define the parameter grid
     param_grid = {'submodels__dtr__model__min_samples_split': [2, 10, 20],
@@ -56,8 +57,8 @@ def main():
 
     # Prep data for the model and scoring
     print('Prepping train and test data for models...')
-    X_train, y_train = dataModelTrainingPrepare(train_df)
-    X_test = dataModelScoringPrepare(test_df)
+    X_train, y_train = dataModelTrainingPrepare(train_df, train_col_file)
+    X_test = dataModelScoringPrepare(test_df, train_col_file)
 
     # Instantiate learner class
     print('Training a model...')
