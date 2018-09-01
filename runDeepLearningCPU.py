@@ -4,6 +4,7 @@
 import os
 import sys
 import datetime as dt 
+import time
 import pandas as pd 
 import math
 import seaborn as sns
@@ -73,7 +74,9 @@ def main():
     # Make predictions on the test data
     # Also writes predictions to file
     print('Making predictions on test data...')
+    preds_startTime = time.time()
     dl.makePrediction(X_test, model_file=model_file, dr_pipeline_file=dr_pipeline_file)
+    preds_endTime = time.time() - preds_startTime
 
     # Get drivers
     print('Getting model drivers...')
@@ -95,6 +98,7 @@ def main():
         text_file.write('Training R2 score: ' + str(dl.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(dl.maeFit_) + '\n') 
         text_file.write('Training run time: ' + str(dl.fitRunTime_) + ' seconds' + '\n')
+        text_file.write('Prediction run time: ' + str(round(preds_endTime,6)) + ' seconds' + '\n')
 
     print('Job complete!')
 

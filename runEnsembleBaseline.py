@@ -4,6 +4,7 @@
 
 import os
 import sys
+import time
 import datetime as dt 
 import pandas as pd 
 from ensembleLearnerPipeline import ensembleLearner
@@ -74,7 +75,9 @@ def main():
     # Make predictions on the test data
     # Also writes predictions to file
     print('Making predictions on test data...')
+    preds_startTime = time.time()
     ensPipelineLearner.makePrediction(X_test, model_object_file, dr_pipeline_file)
+    preds_endTime = time.time() - preds_startTime
 
     # Compute drivers and write driver output to file
     print('Getting drivers...')
@@ -85,7 +88,8 @@ def main():
     with open('models/ensemble/ensemble_report'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(ensPipelineLearner.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(ensPipelineLearner.maeFit_) + '\n') 
-        text_file.write('Training run time: ' + str(ensPipelineLearner.fitRunTime_) + ' seconds' + '\n') 
+        text_file.write('Training run time: ' + str(ensPipelineLearner.fitRunTime_) + ' seconds' + '\n')
+        text_file.write('Prediction run time: ' + str(round(preds_endTime,6)) + ' seconds' + '\n')
         text_file.write('Best params: ' + str(ensPipelineLearner.modelObject.best_params_) + '\n') 
         text_file.write('Best estimator: ' + str(ensPipelineLearner.modelObject.best_estimator_) + '\n') 
 
