@@ -9,7 +9,7 @@ Run `pip install -r requirements.txt` to ensure all necessary packages are the c
 The ensemble pipeline model can be configured and trained in the *runEnsembleBaseline.py* file. Simply edit the configurations in that file and run using `python runEnsembleBaseline.py`.
 
 <b>Deep Learning Model</b><br>
-The deep learning pipeline model can be configured and trained in the *runDeepLearning.py* file. Simply edit the configurations in that file and run using `python runDeepLearningCPU.py` for CPU run and `python runDeepLearningGPU.py` for GPU run.
+The deep learning pipeline model can be configured and trained in the *runDeepLearningCPU.py* and *runDeepLearningGPU.py* files. Simply edit the configurations in that file and run using `python runDeepLearningCPU.py` for CPU run and `python runDeepLearningGPU.py` for GPU run.
 
 ### <u>Supplemental Information</u>
 * Input data must be within the `data/input/` directory.
