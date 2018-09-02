@@ -19,7 +19,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from keras.models import Sequential, load_model
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import adam, SGD
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping
 
 class deepLearner:
     '''
@@ -96,9 +96,12 @@ class deepLearner:
         # Model checkpointer for storing best weights
         checkpointer = ModelCheckpoint(filepath='models/deep_learning/weights.best.from_cpu_'+dt.datetime.now().strftime('%Y_%m_%d')+'.hdf5', verbose=1, save_best_only=True)
 
+        # Early stopping
+        earlystopper = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
+
         # Train the model
         print('Training the network...')
-        self.modelObject = self.networkFunc.fit(X_train_reduced, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate], verbose=1)
+        self.modelObject = self.networkFunc.fit(X_train_reduced, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate, earlystopper], verbose=1)
 
         # Get training accuracies
         inPreds = self.modelObject.model.predict(X_train_reduced)
