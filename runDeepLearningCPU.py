@@ -24,30 +24,30 @@ def main():
     trainFile = 'train.csv'
     testFile = 'test.csv'
     train_col_file = 'models/deep_learning/train_cols.txt'
-    model_file = 'models/deep_learning/weights.best.from_cpu_2018_09_01.hdf5'
-    dr_pipeline_file = 'models/deep_learning/cpu_drPipeline_2018_09_01.pkl'
+    model_file = 'models/deep_learning/weights.best.from_cpu_'+dt.datetime.now().strftime('%Y_%m_%d')+'.hdf5'
+    dr_pipeline_file = 'models/deep_learning/cpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
 
     # Network training configuration
     dr_threshold = '0.75*mean'
-    epochs=5
-    batch_size=50
+    epochs=10
+    batch_size=32
     val_frac=0.15
 
     # Define the network architecture
     def createModel(input_size):
         model = Sequential()
         model.add(Dense(128, input_dim=input_size, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(64,kernel_initializer='normal', activation='relu'))
-        model.add(Dense(32,kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1, kernel_initializer='normal'))
-        model.compile(loss='mean_absolute_error', optimizer='adam', metrics=['mean_absolute_error'])
+        model.add(Dense(64, activation='relu'))
+        model.add(Dense(32, activation='relu'))
+        model.add(Dense(1))
+        model.compile(loss='mean_absolute_error', optimizer='SGD', metrics=['mae', 'mse'])
         return model
     
     # Learning rate decay function
     def stepDecay(epoch):
         initial_lrate = 0.1
         drop = 0.5
-        epochs_drop = 10.0
+        epochs_drop = 5.0
         lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
         return lrate
 
