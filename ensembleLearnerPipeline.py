@@ -95,7 +95,7 @@ class ensembleLearner:
         X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
 
         # Split training and validation data
-        X_train, X_val, y_train, y_val = train_test_split(X_train_dr, y_train, test_size=val_frac, random_sate=self.randSeed)
+        X_train, X_val, y_train, y_val = train_test_split(X_train_dr, y_train, test_size=val_frac)
 
         # Ensembler
         stacker = LinearRegression()
