@@ -17,7 +17,7 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.linear_model import LinearRegression, SGDRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.feature_selection import VarianceThreshold, SelectFromModel
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 
 class ModelTransformer(BaseEstimator, TransformerMixin):
@@ -51,7 +51,7 @@ class ensembleLearner:
         self.param_grid = None
 
 
-    def buildModel(self, X_train, y_train, param_grid, dr_threshold='0.75*mean'):
+    def buildModel(self, X_train, y_train, param_grid, val_frac=0.15, dr_threshold='0.75*mean'):
         '''
         Fits a model to the data using 5 fold cross validation and grid search.
         The following model attributes are stored:
@@ -81,6 +81,8 @@ class ensembleLearner:
         Pandas dataframe.
         '''
 
+        np.random.seed(self.randSeed)
+
         self.param_grid = param_grid
 
         startTime = time.time()
@@ -91,6 +93,9 @@ class ensembleLearner:
         ])
 
         X_train_dr = self.drPipeline.fit_transform(X_train, y_train)
+
+        # Split training and validation data
+        X_train, X_val, y_train, y_val = train_test_split(X_train_dr, y_train, test_size=val_frac)
 
         # Ensembler
         stacker = LinearRegression()
@@ -106,13 +111,16 @@ class ensembleLearner:
             ])
 
         # Fit grid search using params and ensemble pipeline
-        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=3, scoring='r2', refit=True, verbose=3, n_jobs=2)
-        self.modelObject = ensembleGrid.fit(X_train_dr, y_train)
+        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=10, scoring='r2', refit=True, verbose=3, n_jobs=3)
+        self.modelObject = ensembleGrid.fit(X_train, y_train)
 
-        # Training accuracies
-        inPreds = self.modelObject.predict(X_train_dr)
+        # Training and validation accuracies
+        inPreds = self.modelObject.predict(X_train)
+        valPreds = self.modelObject.predict(X_val)
         self.r2Fit_ = r2_score(y_train, inPreds)
         self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))  
+        self.r2Val_ = r2_score(y_val, valPreds)
+        self.maeVal_ = mean_absolute_error(np.exp(y_val), np.exp(valPreds))  
 
         # End run and save run time in seconds
         self.fitRunTime_ = time.time() - startTime
