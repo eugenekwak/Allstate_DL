@@ -111,7 +111,7 @@ class ensembleLearner:
             ])
 
         # Fit grid search using params and ensemble pipeline
-        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=10, scoring='r2', refit=True, verbose=3, n_jobs=3)
+        ensembleGrid = GridSearchCV(ensemble, param_grid=param_grid, cv=10, scoring='r2', refit=True, verbose=3, n_jobs=2)
         self.modelObject = ensembleGrid.fit(X_train, y_train)
 
         # Training and validation accuracies
