@@ -22,22 +22,21 @@ def main():
     train_col_file = 'models/ensemble/train_cols.txt'
     model_object_file = 'models/ensemble/ensemble_model_2018_09_01.pkl'
     dr_pipeline_file = 'models/ensemble/drPipeline_2018_09_01.pkl'
-    dr_threshold = '0.75*mean'
+    dr_threshold = '0.85*mean'
 
     # Define the parameter grid
-    param_grid = {'submodels__dtr__model__min_samples_split': [5],
-                  'submodels__dtr__model__max_depth': [5],
-                  'submodels__dtr__model__min_samples_leaf': [5],
+    param_grid = {'submodels__dtr__model__min_samples_split': [2, 5, 10, 20],
+                  'submodels__dtr__model__max_depth': [5, 10, 20],
+                  'submodels__dtr__model__min_samples_leaf': [2, 5, 10, 20],
                   'submodels__sgd__model__learning_rate': ['optimal'],
-                  'submodels__sgd__model__max_iter': [1000],
-                  'submodels__sgd__model__penalty': ['l1'],
-                  'submodels__sgd__model__tol': [0.01],
+                  'submodels__sgd__model__max_iter': [1000, 7500],
+                  'submodels__sgd__model__penalty': ['l1', 'l2'],
+                  'submodels__sgd__model__tol': [0.01, 0.001],
                  }
 
     # Pipeline architecture for reference
     #
     # drPipeline = Pipeline([
-    #        ('varThresh', VarianceThreshold()),
     #        ('varImp', SelectFromModel(estimator=DecisionTreeRegressor())),
     #    ])
     # stacker = LinearRegression()
