@@ -20,18 +20,20 @@ def main():
     trainFile = 'train.csv'
     testFile = 'test.csv'
     train_col_file = 'models/ensemble/train_cols.txt'
-    model_object_file = 'models/ensemble/ensemble_model_2018_09_01.pkl'
-    dr_pipeline_file = 'models/ensemble/drPipeline_2018_09_01.pkl'
-    dr_threshold = '0.85*mean'
+    model_object_file = 'models/ensemble/ensemble_model_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
+    dr_pipeline_file = 'models/ensemble/drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
+    dr_threshold = '1.05*mean'
+    val_frac = 0.15
 
     # Define the parameter grid
-    param_grid = {'submodels__dtr__model__min_samples_split': [2, 5, 10, 20],
-                  'submodels__dtr__model__max_depth': [5, 10, 20],
-                  'submodels__dtr__model__min_samples_leaf': [2, 5, 10, 20],
+    param_grid = {'submodels__dtr__model__min_samples_split': [0.10],
+                  'submodels__dtr__model__max_depth': [10],
+                  'submodels__dtr__model__min_samples_leaf': [0.10],
+                  'submodels__dtr__model__max_features': [10],
                   'submodels__sgd__model__learning_rate': ['optimal'],
-                  'submodels__sgd__model__max_iter': [1000, 7500],
-                  'submodels__sgd__model__penalty': ['l1', 'l2'],
-                  'submodels__sgd__model__tol': [0.01, 0.001],
+                  'submodels__sgd__model__max_iter': [7000],
+                  'submodels__sgd__model__penalty': ['l1'],
+                  'submodels__sgd__model__tol': [0.001],
                  }
 
     # Pipeline architecture for reference
@@ -69,7 +71,7 @@ def main():
     ensPipelineLearner = ensembleLearner()
 
     # Train the model
-    ensPipelineLearner.buildModel(X_train, y_train, param_grid, dr_threshold)
+    ensPipelineLearner.buildModel(X_train, y_train, param_grid, val_frac, dr_threshold)
 
     # Make predictions on the test data
     # Also writes predictions to file
@@ -86,7 +88,9 @@ def main():
     print('Gathering performance metrics...')
     with open('models/ensemble/ensemble_report'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(ensPipelineLearner.r2Fit_) + '\n')
+        text_file.write('Validation R2 score: ' + str(ensPipelineLearner.r2Val_) + '\n')
         text_file.write('Training MAE score: ' + str(ensPipelineLearner.maeFit_) + '\n') 
+        text_file.write('Validation MAE score: ' + str(ensPipelineLearner.maeVal_) + '\n') 
         text_file.write('Training run time: ' + str(ensPipelineLearner.fitRunTime_) + ' seconds' + '\n')
         text_file.write('Prediction run time: ' + str(round(preds_endTime,6)) + ' seconds' + '\n')
         text_file.write('Best params: ' + str(ensPipelineLearner.modelObject.best_params_) + '\n') 
