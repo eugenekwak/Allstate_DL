@@ -1,12 +1,14 @@
 # deepLearner.py
 # Deep learning model
-# Last updated 2018-09-01
+# Last updated 2018-08-27
 
-# Notes:
-# Update this to work with any number of GPU's.
-
-import sys
 import os
+# Keras with tensorflow backend automatically uses all available GPUs...
+# https://stackoverflow.com/questions/40690598/can-keras-with-tensorflow-backend-be-forced-to-use-cpu-or-gpu-at-will?answertab=oldest#tab-top
+# uncomment below to use CPU
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+# os.environ["CUDA_VISIBLE_DEVICES"] = ""
+import sys
 import time
 import math
 import json
@@ -19,32 +21,10 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.feature_selection import VarianceThreshold, SelectFromModel
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
-from keras.utils import multi_gpu_model
 from keras.models import Sequential, load_model
 from keras.layers.core import Dense, Dropout, Activation
 from keras.optimizers import adam, SGD
 from keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping
-
-class ModelMGPU(Model):
-    '''
-    Class to make ModelCheckpoint call back work with multi_gpu_model().
-    From github user @avolkov1.
-
-    '''
-    def __init__(self, ser_model, gpus):
-        pmodel = multi_gpu_model(ser_model, gpus)
-        self.__dict__.update(pmodel.__dict__)
-        self._smodel = ser_model
-
-    def __getattribute__(self, attrname):
-        '''Override load and save methods to be used from the serial-model. The
-        serial-model holds references to the weights in the multi-gpu model.
-        '''
-        # return Model.__getattribute__(self, attrname)
-        if 'load' in attrname or 'save' in attrname:
-            return getattr(self._smodel, attrname)
-
-        return super(ModelMGPU, self).__getattribute__(attrname)
 
 class deepLearner:
     '''
@@ -107,9 +87,12 @@ class deepLearner:
         # Fit DR pipeline and convert label to numpy array
         X_train_reduced = self.drPipeline.fit_transform(X_train, y_train)
         y_train = np.array(y_train)
+        
+        # Partition validation set
+        X_train, X_val, y_train, y_val = train_test_split(X_train_reduced, y_train, test_size=val_frac)
 
         # Get network architecture
-        self.networkFunc = network_function(X_train_reduced.shape[1])
+        self.networkFunc = network_function(X_train.shape[1])
 
         # Write model summary to file
         with open('models/deep_learning/gpu_model_summary_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt','w') as fh:
@@ -122,21 +105,19 @@ class deepLearner:
         checkpointer = ModelCheckpoint(filepath='models/deep_learning/weights.best.from_gpu_'+dt.datetime.now().strftime('%Y_%m_%d')+'.hdf5', verbose=1, save_best_only=True)
 
         # Early stopping
-        earlystopper = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
-
-        try:
-            parallel_model = multi_gpu_model(self.networkFunc)
-        except:
-            sys.exit('Error: No compatible GPU\'s detected.')
+        earlystopper = EarlyStopping(monitor='val_loss', min_delta=0, patience=12, verbose=1, mode='auto')
 
         # Train the model
         print('Training the network...')
-        self.modelObject = parallel_model.fit(X_train_reduced, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate, earlystopper], verbose=1)
+        self.modelObject = self.networkFunc.fit(X_train, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate, earlystopper], verbose=1)
 
         # Get training accuracies
-        inPreds = self.modelObject.model.predict(X_train_reduced)
+        inPreds = self.modelObject.model.predict(X_train)
+        valPreds = self.modelObject.model.predict(X_val)
         self.r2Fit_ = r2_score(y_train, inPreds)
-        self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))  
+        self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))
+        self.r2Val_ = r2_score(y_val, valPreds)
+        self.maeVal_ = mean_absolute_error(np.exp(y_val), np.exp(valPreds))  
 
         # Save down DR pipeline for production scoring
         joblib.dump(self.drPipeline, 'models/deep_learning/gpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 

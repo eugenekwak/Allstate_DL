@@ -2,8 +2,11 @@
 # Deep learning model
 # Last updated 2018-08-27
 
-import sys
 import os
+# https://stackoverflow.com/questions/40690598/can-keras-with-tensorflow-backend-be-forced-to-use-cpu-or-gpu-at-will?answertab=oldest#tab-top
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+import sys
 import time
 import math
 import json
@@ -100,7 +103,7 @@ class deepLearner:
         checkpointer = ModelCheckpoint(filepath='models/deep_learning/weights.best.from_cpu_'+dt.datetime.now().strftime('%Y_%m_%d')+'.hdf5', verbose=1, save_best_only=True)
 
         # Early stopping
-        earlystopper = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1, mode='auto')
+        earlystopper = EarlyStopping(monitor='val_loss', min_delta=0, patience=12, verbose=1, mode='auto')
 
         # Train the model
         print('Training the network...')

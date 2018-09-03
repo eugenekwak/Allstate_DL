@@ -28,8 +28,8 @@ def main():
     dr_pipeline_file = 'models/deep_learning/cpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
 
     # Network training configuration
-    dr_threshold = '0.85*mean'
-    epochs=100
+    dr_threshold = '1.05*mean'
+    epochs=500
     batch_size=32
     val_frac=0.10
 
@@ -37,10 +37,11 @@ def main():
     def createModel(input_size):
         model = Sequential()
         model.add(Dense(1024, input_dim=input_size, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(1024, kernel_initializer='normal', activation='relu'))
-        model.add(Dropout(0.15, seed=10))
         model.add(Dense(512, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25, seed=10))
+        model.add(Dense(256, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25, seed=10))
+        model.add(Dense(64, kernel_initializer='normal', activation='relu'))
         model.add(Dropout(0.15, seed=10))
         model.add(Dense(32, kernel_initializer='normal', activation='relu'))
         model.add(Dense(16, kernel_initializer='normal', activation='relu'))
@@ -50,7 +51,7 @@ def main():
     
     # Learning rate decay function
     def stepDecay(epoch):
-        initial_lrate = 0.1
+        initial_lrate = 0.01
         drop = 0.5
         epochs_drop = 5.0
         lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
@@ -95,7 +96,7 @@ def main():
     plt.ylabel('MAE')
     plt.title('MAE per Epoch')
     plt.legend()
-    plt.savefig('models/deep_learning/train_performance.png')
+    plt.savefig('models/deep_learning/cpu_train_performance.png')
 
     # Gather performance metrics
     print('Gathering performance metrics...')

@@ -15,10 +15,6 @@ from keras.optimizers import adam, SGD
 from deepLearnerPipelineGPU import deepLearner
 from helperFunctions.dataCleanLoad import *
 
-# https://stackoverflow.com/questions/8223811/top-command-for-gpus-using-cuda
-# https://datascience.stackexchange.com/a/25737
-
-
 def main():
     
     # Configure run parameters here:
@@ -28,30 +24,36 @@ def main():
     trainFile = 'train.csv'
     testFile = 'test.csv'
     train_col_file = 'models/deep_learning/train_cols.txt'
-    model_file = 'models/deep_learning/weights.best.from_gpu_2018_09_01.hdf5'
-    dr_pipeline_file = 'models/deep_learning/gpu_drPipeline_2018_09_01.pkl'
+    model_file = 'models/deep_learning/weights.best.from_gpu_'+dt.datetime.now().strftime('%Y_%m_%d')+'.hdf5'
+    dr_pipeline_file = 'models/deep_learning/gpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
 
     # Network training configuration
-    dr_threshold = '0.75*mean'
-    epochs=5
-    batch_size=50
-    val_frac=0.15
+    dr_threshold = '1.05*mean'
+    epochs=500
+    batch_size=32
+    val_frac=0.10
 
     # Define the network architecture
     def createModel(input_size):
         model = Sequential()
-        model.add(Dense(128, input_dim=input_size, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(1))
-        model.compile(loss='mean_absolute_error', optimizer='SGD', metrics=['mean_absolute_error'])
+        model.add(Dense(1024, input_dim=input_size, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(512, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25, seed=10))
+        model.add(Dense(256, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.25, seed=10))
+        model.add(Dense(64, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.15, seed=10))
+        model.add(Dense(32, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(16, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(1, kernel_initializer='normal'))
+        model.compile(loss='mean_absolute_error', optimizer='SGD', metrics=['mae', 'mse'])
         return model
     
     # Learning rate decay function
     def stepDecay(epoch):
-        initial_lrate = 0.1
+        initial_lrate = 0.01
         drop = 0.5
-        epochs_drop = 10.0
+        epochs_drop = 5.0
         lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
         return lrate
 
@@ -94,13 +96,15 @@ def main():
     plt.ylabel('MAE')
     plt.title('MAE per Epoch')
     plt.legend()
-    plt.savefig('models/deep_learning/train_performance.png')
+    plt.savefig('models/deep_learning/gpu_train_performance.png')
 
     # Gather performance metrics
     print('Gathering performance metrics...')
     with open('models/deep_learning/gpu_deep_learning_report_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(dl.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(dl.maeFit_) + '\n') 
+        text_file.write('Validation R2 score: ' + str(dl.r2Val_) + '\n')
+        text_file.write('Validation MAE score: ' + str(dl.maeVal_) + '\n') 
         text_file.write('Training run time: ' + str(dl.fitRunTime_) + ' seconds' + '\n')
         text_file.write('Prediction run time: ' + str(round(preds_endTime,6)) + ' seconds' + '\n')
 
