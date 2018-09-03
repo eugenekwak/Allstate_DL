@@ -28,18 +28,23 @@ def main():
     dr_pipeline_file = 'models/deep_learning/cpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl'
 
     # Network training configuration
-    dr_threshold = '0.75*mean'
-    epochs=10
+    dr_threshold = '0.85*mean'
+    epochs=100
     batch_size=32
-    val_frac=0.15
+    val_frac=0.10
 
     # Define the network architecture
     def createModel(input_size):
         model = Sequential()
-        model.add(Dense(128, input_dim=input_size, kernel_initializer='normal', activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(1))
+        model.add(Dense(1024, input_dim=input_size, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(1024, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.15, seed=10))
+        model.add(Dense(512, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(128, kernel_initializer='normal', activation='relu'))
+        model.add(Dropout(0.15, seed=10))
+        model.add(Dense(32, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(16, kernel_initializer='normal', activation='relu'))
+        model.add(Dense(1, kernel_initializer='normal'))
         model.compile(loss='mean_absolute_error', optimizer='SGD', metrics=['mae', 'mse'])
         return model
     
@@ -97,6 +102,8 @@ def main():
     with open('models/deep_learning/cpu_deep_learning_report_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(dl.r2Fit_) + '\n')
         text_file.write('Training MAE score: ' + str(dl.maeFit_) + '\n') 
+        text_file.write('Validation R2 score: ' + str(dl.r2Val_) + '\n')
+        text_file.write('Validation MAE score: ' + str(dl.maeVal_) + '\n') 
         text_file.write('Training run time: ' + str(dl.fitRunTime_) + ' seconds' + '\n')
         text_file.write('Prediction run time: ' + str(round(preds_endTime,6)) + ' seconds' + '\n')
 

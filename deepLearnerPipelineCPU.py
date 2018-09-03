@@ -82,9 +82,12 @@ class deepLearner:
         # Fit DR pipeline and convert label to numpy array
         X_train_reduced = self.drPipeline.fit_transform(X_train, y_train)
         y_train = np.array(y_train)
+        
+        # Partition validation set
+        X_train, X_val, y_train, y_val = train_test_split(X_train_reduced, y_train, test_size=val_frac)
 
         # Get network architecture
-        self.networkFunc = network_function(X_train_reduced.shape[1])
+        self.networkFunc = network_function(X_train.shape[1])
 
         # Write model summary to file
         with open('models/deep_learning/cpu_model_summary_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt','w') as fh:
@@ -101,12 +104,15 @@ class deepLearner:
 
         # Train the model
         print('Training the network...')
-        self.modelObject = self.networkFunc.fit(X_train_reduced, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate, earlystopper], verbose=1)
+        self.modelObject = self.networkFunc.fit(X_train, y_train, validation_split=val_frac, epochs=epochs, batch_size=batch_size, callbacks=[checkpointer, learningRate, earlystopper], verbose=1)
 
         # Get training accuracies
-        inPreds = self.modelObject.model.predict(X_train_reduced)
+        inPreds = self.modelObject.model.predict(X_train)
+        valPreds = self.modelObject.model.predict(X_val)
         self.r2Fit_ = r2_score(y_train, inPreds)
-        self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))  
+        self.maeFit_ = mean_absolute_error(np.exp(y_train), np.exp(inPreds))
+        self.r2Val_ = r2_score(y_val, valPreds)
+        self.maeVal_ = mean_absolute_error(np.exp(y_val), np.exp(valPreds))  
 
         # Save down DR pipeline for production scoring
         joblib.dump(self.drPipeline, 'models/deep_learning/cpu_drPipeline_'+dt.datetime.now().strftime('%Y_%m_%d')+'.pkl') 

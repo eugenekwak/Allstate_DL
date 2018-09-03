@@ -1,0 +1,6 @@
+Training R2 score: 0.6189051208505133
+Training MAE score: 1006.1447751959373
+Validation R2 score: 0.5108830604628549
+Validation MAE score: 1193.1567527063155
+Training run time: 4060.684700012207 seconds
+Prediction run time: 12.399027 seconds
