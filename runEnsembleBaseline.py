@@ -86,7 +86,7 @@ def main():
 
     # Gather performance metrics
     print('Gathering performance metrics...')
-    with open('models/ensemble/ensemble_report'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
+    with open('models/ensemble/ensemble_report_'+dt.datetime.now().strftime('%Y_%m_%d')+'.txt', 'w') as text_file:
         text_file.write('Training R2 score: ' + str(ensPipelineLearner.r2Fit_) + '\n')
         text_file.write('Validation R2 score: ' + str(ensPipelineLearner.r2Val_) + '\n')
         text_file.write('Training MAE score: ' + str(ensPipelineLearner.maeFit_) + '\n') 
