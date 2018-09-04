@@ -4,3 +4,4 @@ Validation R2 score: 0.5270424885680383
 Validation MAE score: 1196.5485213679829
 Training run time: 548.9738409519196 seconds
 Prediction run time: 4.717218 seconds
+26 epochs
