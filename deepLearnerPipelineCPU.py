@@ -58,6 +58,7 @@ class deepLearner:
         @ X_train: Pandas data frame for feature space in training data.
 
         @ y_train: Pandas series containing labels.
+        
         @ network_function: Function defining Keras neural network.
 
         @ decay_function: Function defining the learning rate decay.
