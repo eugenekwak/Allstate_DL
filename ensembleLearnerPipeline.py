@@ -38,7 +38,7 @@ class ModelTransformer(BaseEstimator, TransformerMixin):
 class ensembleLearner:
     '''
     A baseline model to benchmark deep learning architectures against.
-    This class is only tested against Pandas dataframes.
+
     '''
 
     def __init__(self):
@@ -47,19 +47,24 @@ class ensembleLearner:
         self.fitRunTime_ = 0.0
         self.r2Fit_ = 0.0
         self.maeFit_ = 0.0
+        self.r2Val_ = 0.0
+        self.maeVal_ = 0.0
         self.modelObject = None
         self.param_grid = None
 
 
     def buildModel(self, X_train, y_train, param_grid, val_frac=0.15, dr_threshold='0.75*mean'):
         '''
-        Fits a model to the data using 5 fold cross validation and grid search.
+        Fits a model to the data using 10 fold cross validation and grid search.
+
         The following model attributes are stored:
             - self.param_grid     : Dict object containing search grid.
             - self.modelObject    : Fitted model pipeline object.
             - self.fitRunTime_    : Float object containing total run time in seconds.
-            - self.maeFit_        : Best mean absolute error from cross-validation.
-            - self.r2Fit_         : Best r2_score from cross-validation.
+            - self.maeFit_        : Best mean absolute error from training data.
+            - self.r2Fit_         : Best r2_score from training data.
+            - self.maeVal_        : Best mean absolute error from validation data.
+            - self.r2Val_         : Best r2_score from validation data.
 
         Arguments
         ----------------
@@ -73,12 +78,11 @@ class ensembleLearner:
                           ...
                           }
         
+        @ val_frac: Fraction of training data to partition for validation.
+        
         @ dr_threshold: Threshold for determining features to include in the model.
                         See scikit-learn documentation for SelectFromModel().
               
-        Returns
-        ----------------
-        Pandas dataframe.
         '''
 
         np.random.seed(self.randSeed)
