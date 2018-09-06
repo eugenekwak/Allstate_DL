@@ -22,6 +22,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 class ModelTransformer(BaseEstimator, TransformerMixin):
     '''
+    From Github user @DerekKaknes
     Turns estimators into transformers so that predicted values returned.
     These predictions can be ensembled via stacking.
     '''
