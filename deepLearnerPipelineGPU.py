@@ -37,6 +37,8 @@ class deepLearner:
         self.fitRunTime_ = 0.0
         self.r2Fit_ = 0.0
         self.maeFit_ = 0.0
+        self.r2Val_ = 0.0
+        self.maeVal_ = 0.0
         self.modelObject = None
         self.drPipeline = None
 
@@ -45,18 +47,20 @@ class deepLearner:
         Trains a network defined by a function.
 
         The following model attributes are stored:
-            - self.X_train_cols_  : List object containing feature names.
-            - self.modelObject    : Network train history.
-            - self.drPipeline     : Fitted dimension reduction pipeline
+            - self.modelObject    : Network train history and model object.
+            - self.drPipeline     : Fitted dimension reduction pipeline.
             - self.fitRunTime_    : Float object containing total run time in seconds.
-            - self.maeFit_        : Best mean absolute error from validation.
-            - self.r2Fit_         : Best r2_score from validation.
+            - self.maeFit_        : Best mean absolute error from training data.
+            - self.r2Fit_         : Best r2_score from training data.
+            - self.maeVal_        : Best mean absolute error from validation data.
+            - self.r2Val_         : Best r2_score from validation data.
 
         Arguments
         ----------------
-        @ X_train: @ X_train: Pandas data frame for feature space in training data.
+        @ X_train: Pandas data frame for feature space in training data.
 
         @ y_train: Pandas series containing labels.
+        
         @ network_function: Function defining Keras neural network.
 
         @ decay_function: Function defining the learning rate decay.
