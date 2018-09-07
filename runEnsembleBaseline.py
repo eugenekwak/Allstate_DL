@@ -26,14 +26,14 @@ def main():
     val_frac = 0.15
 
     # Define the parameter grid
-    param_grid = {'submodels__dtr__model__min_samples_split': [0.15],
-                  'submodels__dtr__model__max_depth': [10],
-                  'submodels__dtr__model__min_samples_leaf': [0.05],
-                  'submodels__dtr__model__max_features': [10],
+    param_grid = {'submodels__dtr__model__min_samples_split': [0.15, 0.25],
+                  'submodels__dtr__model__max_depth': [5, 10, 20],
+                  'submodels__dtr__model__min_samples_leaf': [0.05, 0.25],
+                  'submodels__dtr__model__max_features': [5, 10, 20],
                   'submodels__sgd__model__learning_rate': ['optimal'],
-                  'submodels__sgd__model__max_iter': [7000],
+                  'submodels__sgd__model__max_iter': [2000, 7000],
                   'submodels__sgd__model__penalty': ['l1', 'l2'],
-                  'submodels__sgd__model__tol': [0.001],
+                  'submodels__sgd__model__tol': [0.01, 0.001],
                  }
 
     # Pipeline architecture for reference
