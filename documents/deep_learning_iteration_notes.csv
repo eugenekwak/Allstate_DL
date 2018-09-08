@@ -1,4 +1,4 @@
-Model_Changes,Feature_Selection_Threshold,Result
+Model Changes,Feature Selection Threshold,Result
 Single Layer Neural Network,Mean,Model learned nothing; R2 scores were near 0 and MAE was about 2500
 Add two hidden layers; Learning Rate Decay; Early Stopping,Mean,Model predictions was just predicting the mean and not learning; Found issue to be adam optimizer but unclear as to why
 Swap out ADAM for SGD optimizer,Mean,Model learning and predictions improved dramatically reaching R2 scores of around 0.40-0.45
@@ -7,4 +7,4 @@ Lowered batch size to 16,0.5*Mean,Model was overtrained due to wider feature spa
 Increased batch size 100,1.5*Mean,Model performance dropped back down to the 0.4 (R2) range
 Lowered batch size to 64,0.75*Mean,Model was overtrained but not as much as 0.5*Mean in feature selection
 Lowered batch size to 32,1.25*Mean,Model fit was back to around the 0.45 (R2) range
-Kept the network,1.05*Mean,Model performance increased to 0.55 (R2) range and wasn't too overfit
+Kept the network,1.05*Mean,Model performance increased to 0.55 (R2) range and wasn't too overfit; Benchmark beaten
