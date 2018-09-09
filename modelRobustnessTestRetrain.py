@@ -82,7 +82,7 @@ mae_val_list = []
 # create empty dataframe for final results
 bootstrap_df = pd.DataFrame()
 
-# retrain the model 100 times with different samples 
+# retrain the model 50 times with different samples 
 for n in range(1, 51):
 
     # print iteration
