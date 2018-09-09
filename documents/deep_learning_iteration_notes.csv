@@ -1,8 +1,8 @@
 Changes to MLP,Feature Selection Threshold,Result
-Single Hidden Layer Neural Network,Mean,"Model learned nothing; R2 scores were near 0 and MAE was about 2,500"
-Add two hidden layers; Learning Rate Decay; Early Stopping,Mean,Model predictions was just predicting the mean and not learning; Found issue to be ADAM optimizer but unclear as to why
-Swap out ADAM for SGD optimizer,Mean,Model learning and predictions improved dramatically reaching R2 scores of around 0.40-0.45
-Add 3 more layers; Dropouts; Increase Nodes,Mean,"Significant improvement in R2 and MAE; reaching 0.5 (R2) and about 1,400 MAE"
+Single Hidden Layer Neural Network,1.05*Mean,"Model learned nothing; R2 scores were near 0 and MAE was about 2,500"
+Add two hidden layers; Learning Rate Decay; Early Stopping,1.05*Mean,Model predictions was just predicting the mean and not learning; Found issue to be ADAM optimizer but unclear as to why
+Swap out ADAM for SGD optimizer,1.05*Mean,Model learning and predictions improved dramatically reaching R2 scores of around 0.40-0.45
+Add 3 more layers; Dropouts; Increase Nodes,1.05*Mean,"Significant improvement in R2 and MAE; reaching 0.5 (R2) and about 1,400 MAE"
 Lowered batch size to 16,0.5*Mean,Model was overtrained due to wider feature space
 Increased batch size 100,1.5*Mean,Model performance dropped back down to the 0.4 (R2) range
 Lowered batch size to 64,0.75*Mean,Model was overtrained but not as much as 0.5*Mean in feature selection
