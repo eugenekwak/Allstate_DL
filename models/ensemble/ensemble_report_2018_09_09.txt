@@ -1,0 +1,13 @@
+Training R2 score: 0.5074590465
+Validation R2 score: 0.51462573
+Training MAE score: 1253.713930337
+Validation MAE score: 1245.3840881916
+Training run time: 57497.738712 seconds
+Prediction run time: 1.055 seconds
+Best params: {'submodels__dtr__model__max_depth': 20, 'submodels__dtr__model__max_features': 50, 'submodels__dtr__model__min_samples_leaf': 0.01, 'submodels__dtr__model__min_samples_split': 0.05, 'submodels__sgd__model__learning_rate': 'optimal', 'submodels__sgd__model__max_iter': 10000, 'submodels__sgd__model__penalty': 'l2', 'submodels__sgd__model__tol': 0.01}
+Best estimator: Pipeline(memory=None,
+     steps=[('submodels', FeatureUnion(n_jobs=1,
+       transformer_list=[('dtr', ModelTransformer(model=DecisionTreeRegressor(criterion='mse', max_depth=20, max_features=50,
+           max_leaf_nodes=None, min_impurity_decrease=0.0,
+           min_impurity_split=None, min_samples_leaf=0.01,
+           m...=None)), ('ensemble', LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False))])
